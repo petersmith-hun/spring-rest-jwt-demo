@@ -10,9 +10,15 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <packaging>war</packaging>
-    <artifactId>web</artifactId>
+    <artifactId>spring-rest-jwt-demo.web</artifactId>
     
     <dependencies>
+        <dependency>
+            <groupId>hu.psprog.dev</groupId>
+            <artifactId>spring-rest-jwt-demo.service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>

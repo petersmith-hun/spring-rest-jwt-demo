@@ -1,14 +1,13 @@
 package hu.psprog.dev.jwtdemo.web.exception;
 
-public class InvalidJWTTokenException extends RuntimeException {
+import org.springframework.security.core.AuthenticationException;
+
+public class InvalidJWTTokenException extends AuthenticationException {
 
     private static final long serialVersionUID = 1L;
-
-    public InvalidJWTTokenException(String message) {
-        super(message);
-    }
+    private static final String EXCEPTION_MESSAGE = "Found issues with provided JWT token while parsing.";
     
-    public InvalidJWTTokenException(Exception exc) {
-        super(exc);
+    public InvalidJWTTokenException(Exception exception) {
+        super(EXCEPTION_MESSAGE, exception);
     }
 }

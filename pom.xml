@@ -11,6 +11,8 @@
 	
 	<modules>
 	    <module>web</module>
+	    <module>service</module>
+	    <module>persistence</module>
 	</modules>
     
     <properties>
@@ -21,11 +23,18 @@
         <!-- Spring versions -->
         <spring.framework.version>4.2.5.RELEASE</spring.framework.version>
         <spring.security.version>4.0.4.RELEASE</spring.security.version>
+        <spring.data.version>1.10.1.RELEASE</spring.data.version>
         <javax.servlet.api.version>3.1.0</javax.servlet.api.version>
         
         <!-- other version -->
         <jackson.version>2.7.3</jackson.version>
         <jwt.lib.version>0.6.0</jwt.lib.version>
+        <logback.version>1.1.6</logback.version>
+        <slf4j.version>1.7.19</slf4j.version>
+        <hibernate.version>5.1.0.Final</hibernate.version>
+        <hibernate.validator.version>5.2.4.Final</hibernate.validator.version>
+        <h2.version>1.4.191</h2.version>
+        <mysql.version>6.0.2</mysql.version>
         
         <!-- compiler settings -->
         <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -53,6 +62,11 @@
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-core</artifactId>
+                <version>${spring.security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-web</artifactId>
                 <version>${spring.security.version}</version>
             </dependency>
@@ -60,6 +74,38 @@
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-config</artifactId>
                 <version>${spring.security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-jpa</artifactId>
+                <version>${spring.data.version}</version>
+            </dependency>
+            
+            <!-- Persistence dependencies -->
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-entitymanager</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${hibernate.validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.version}</version>
             </dependency>
             
             <!-- Servlet dependencies -->
@@ -86,10 +132,49 @@
                 <artifactId>jjwt</artifactId>
                 <version>${jwt.lib.version}</version>
             </dependency>
+            
+            <!-- logging -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
+                <scope>runtime</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+    
     <build>
+        <finalName>jwtdemo</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.tomcat.maven</groupId>

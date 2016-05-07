@@ -45,7 +45,7 @@ public class JWTAuthenticationToken implements Authentication {
     @Override
     public Object getCredentials() {
 
-        return payload.getHashedPassword();
+        return "";
     }
 
     @Override

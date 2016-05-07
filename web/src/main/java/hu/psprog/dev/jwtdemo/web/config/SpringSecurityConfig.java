@@ -1,14 +1,16 @@
 package hu.psprog.dev.jwtdemo.web.config;
 
 import javax.annotation.PostConstruct;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +18,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.codec.Base64;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -23,7 +28,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import hu.psprog.dev.jwtdemo.web.auth.JWTAuthenticationFilter;
 import hu.psprog.dev.jwtdemo.web.auth.JWTAuthenticationProvider;
-import hu.psprog.dev.jwtdemo.web.auth.JWTUserDetailsService;
 import hu.psprog.dev.jwtdemo.web.auth.RestAuthenticationEntryPoint;
 import hu.psprog.dev.jwtdemo.web.auth.RestAuthenticationSuccessHandler;
 import hu.psprog.dev.jwtdemo.web.util.JWTUtility;
@@ -31,19 +35,14 @@ import hu.psprog.dev.jwtdemo.web.util.JWTUtility;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@PropertySource("classpath:jwtconfig.properties")
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private static final String ENVIRONMENT_VAR_JWT_SECRET = "java:comp/env/jwtSecret";
     private static final String URL_REGISTER = "/api/user/register";
     private static final String URL_LOGIN = "/api/user/login";
     
-    // TODO password hasher
-    
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-    
-    @Value("${jwt.issuer}")
-    private String jwtIssuer;
+    @Autowired
+    private UserDetailsService userService;
     
     @Bean
     public static PropertySourcesPlaceholderConfigurer securityProperties() {
@@ -51,9 +50,11 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     }
     
     @PostConstruct
-    public void setupJWT() {
-        JWTUtility.setIssuer(jwtIssuer);
-        JWTUtility.setSecret(jwtSecret);
+    public void setupJWT() throws NamingException {
+        
+        String jwtSecret = InitialContext.doLookup(ENVIRONMENT_VAR_JWT_SECRET);
+        String jwtSecretBase64Encoded = new String(Base64.encode(jwtSecret.getBytes()));
+        JWTUtility.setSecret(jwtSecretBase64Encoded);
     }
     
     @Bean
@@ -72,6 +73,22 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     }
     
     @Bean
+    public PasswordEncoder passwordEncoder() {
+        
+        return new BCryptPasswordEncoder();
+    }
+    
+    @Bean
+    public AuthenticationProvider tokenClaimAuthenticationProvider() {
+        
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userService);
+        //provider.setPasswordEncoder(passwordEncoder());
+        
+        return provider;
+    }
+    
+    @Bean
     public AuthenticationEntryPoint restAuthenticationEntryPoint() {
         
         return new RestAuthenticationEntryPoint();
@@ -81,12 +98,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     public AuthenticationSuccessHandler restAuthenticationSuccessHandler() {
         
         return new RestAuthenticationSuccessHandler();
-    }
-    
-    @Bean
-    public UserDetailsService jwtUserDetailsService() {
-    	
-    	return new JWTUserDetailsService();
     }
     
     @Bean
@@ -135,7 +146,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         
         auth
             .authenticationProvider(jwtAuthenticationProvider())
-            .userDetailsService(jwtUserDetailsService());
+            .authenticationProvider(tokenClaimAuthenticationProvider());
     }
     
     
